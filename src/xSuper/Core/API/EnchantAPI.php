@@ -7,6 +7,7 @@ namespace xSuper\Core\API;
 use pocketmine\entity\Effect;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\item\enchantment\Enchantment;
+use pocketmine\utils\Config;
 use ReflectionException;
 use ReflectionProperty;
 use SplFixedArray;
@@ -19,6 +20,11 @@ class EnchantAPI
 {
     /** @var Loader */
     private static $plugin;
+    /** @var array[] */
+    public $enchantmentData;
+
+    /** @var self */
+    public static $instance;
 
     /** @var CustomEnchant[] */
     public static $enchants = [];
@@ -39,6 +45,32 @@ class EnchantAPI
             $vanillaEnchantments[$key] = $value;
         }
         $property->setValue($vanillaEnchantments);
+    }
+
+    /**
+     * @param string $enchant
+     * @param string $data
+     * @param int|string|array $default
+     * @return mixed
+     * @internal
+     */
+    public function getEnchantmentData(string $enchant, string $data, $default = "")
+    {
+        if (!isset($this->enchantmentData[str_replace(" ", "", strtolower($enchant))][$data])) $this->setEnchantmentData($enchant, $data, $default);
+        return $this->enchantmentData[str_replace(" ", "", strtolower($enchant))][$data];
+    }
+
+    /**
+     * @param string $enchant
+     * @param string $data
+     * @param int|string|array $value
+     */
+    public function setEnchantmentData(string $enchant, string $data, $value): void
+    {
+        $this->enchantmentData[str_replace(" ", "", strtolower($enchant))][$data] = $value;
+        $config = new Config(Loader::getInstance()->getDataFolder() . $data . ".json");
+        $config->set(str_replace(" ", "", strtolower($enchant)), $value);
+        $config->save();
     }
 
     public static function getPlugin(): Loader
@@ -96,6 +128,11 @@ class EnchantAPI
             ) return $enchant;
         }
         return null;
+    }
+
+    public static function getInstance(): EnchantAPI
+    {
+        return self::$instance;
     }
 }
 
