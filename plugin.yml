@@ -1,0 +1,5 @@
+name: Core
+main: xSuper\Core\Loader
+version: 1.0.0
+api: 3.11.2
+author: xSuper
